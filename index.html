@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Calculadora de Eletromagnetismo | Leis e Campos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9f0f5 0%, #dce3ec 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        /* Card principal */
+        .calculator-card {
+            max-width: 750px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(0px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .card-header {
+            background: #0f2b3d;
+            padding: 1.4rem 2rem;
+            color: white;
+        }
+
+        .card-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-header h1 span {
+            background: #ffb347;
+            font-size: 1.3rem;
+            padding: 4px 12px;
+            border-radius: 60px;
+            color: #1e2f3a;
+        }
+
+        .card-header p {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin-top: 8px;
+        }
+
+        .content {
+            padding: 1.8rem 2rem 2rem;
+        }
+
+        /* Seletor de casos */
+        .case-selector {
+            margin-bottom: 2rem;
+            background: #f1f5f9;
+            padding: 0.75rem 1.2rem;
+            border-radius: 1.2rem;
+        }
+
+        .case-selector label {
+            font-weight: 600;
+            color: #1e3a5f;
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 1rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #0f2b3d;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #ffb347;
+            box-shadow: 0 0 0 3px rgba(255, 180, 71, 0.2);
+        }
+
+        /* Container dinâmico de casos */
+        .case-panel {
+            background: #ffffff;
+            border-radius: 1.5rem;
+            padding: 0.2rem 0 0.8rem 0;
+            transition: all 0.2s ease;
+        }
+
+        .case-group {
+            display: none;
+            animation: fade 0.2s ease;
+        }
+
+        .case-group.active-case {
+            display: block;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .formula-badge {
+            background: #eef2ff;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #155799;
+            border-left: 4px solid #ffb347;
+            font-weight: 500;
+        }
+
+        .input-group {
+            margin-bottom: 1.3rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.4rem;
+        }
+
+        .input-group label {
+            width: 110px;
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        .input-field {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 0.5rem 1rem;
+            transition: 0.2s;
+        }
+
+        .input-field:focus-within {
+            border-color: #ffb347;
+            box-shadow: 0 0 0 2px rgba(255, 180, 71, 0.2);
+            background: white;
+        }
+
+        .input-field input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            padding: 0.5rem 0;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .input-field span {
+            margin-left: 8px;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        small.hint {
+            display: block;
+            font-size: 0.7rem;
+            color: #5b6e8c;
+            margin-top: 4px;
+            margin-left: 114px;
+        }
+
+        .calc-button {
+            background: #0f2b3d;
+            color: white;
+            border: none;
+            padding: 0.9rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 2rem;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 1.5rem 0 1rem;
+            box-shadow: 0 6px 0 #071a25;
+        }
+
+        .calc-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #071a25;
+        }
+
+        .result-area {
+            background: #f1f5f9;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            margin-top: 0.8rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: #4070a0;
+        }
+
+        .result-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0c4a6e;
+            word-break: break-word;
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .result-unit {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .extra-info {
+            font-size: 0.8rem;
+            color: #2c6280;
+            margin-top: 8px;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 8px;
+        }
+
+        .constants {
+            background: #eef3fa;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            margin-top: 1.8rem;
+            font-size: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            color: #2c3e66;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 1rem;
+            background: #f9fbfd;
+            color: #62748c;
+        }
+
+        @media (max-width: 550px) {
+            .content {
+                padding: 1.2rem;
+            }
+            .input-group label {
+                width: 100%;
+                margin-bottom: 4px;
+            }
+            small.hint {
+                margin-left: 0;
+            }
+            .result-value {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="calculator-card">
+    <div class="card-header">
+        <h1>
+            ⚡ Eletromagnetismo
+            <span>Calc</span>
+        </h1>
+        <p>Resolvedor interativo: Lei de Coulomb, Campo Elétrico, Campo Magnético (fio retilíneo) e Força de Lorentz</p>
+    </div>
+    <div class="content">
+        <div class="case-selector">
+            <label>📘 Selecione o fenômeno físico</label>
+            <select id="caseSelect">
+                <option value="coulomb">🔋 Lei de Coulomb – Força entre cargas</option>
+                <option value="efield">⚡ Campo Elétrico (carga pontual)</option>
+                <option value="mfield">🧲 Campo Magnético (fio infinito)</option>
+                <option value="lorentz">🎯 Força de Lorentz (carga em campo B)</option>
+            </select>
+        </div>
+
+        <div class="case-panel" id="casePanel">
+            <!-- Caso 1: Coulomb -->
+            <div id="coulombCase" class="case-group">
+                <div class="formula-badge">📐 F = k · |q₁·q₂| / r² &nbsp;&nbsp; (k = 8,99×10⁹ N·m²/C²)</div>
+                <div class="input-group">
+                    <label>q₁ (Carga 1):</label>
+                    <div class="input-field"><input type="number" id="q1" step="any" placeholder="Ex: 1e-6" value="2e-6"><span>C</span></div>
+                </div>
+                <div class="input-group">
+                    <label>q₂ (Carga 2):</label>
+                    <div class="input-field"><input type="number" id="q2" step="any" placeholder="Ex: 3e-6" value="3e-6"><span>C</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Distância r:</label>
+                    <div class="input-field"><input type="number" id="rCoulomb" step="any" placeholder="metros" value="0.05"><span>m</span></div>
+                </div>
+                <small class="hint">🔹 Distância > 0. Cargas em Coulombs (1μC = 1e-6 C).</small>
+            </div>
+
+            <!-- Caso 2: Campo elétrico -->
+            <div id="efieldCase" class="case-group">
+                <div class="formula-badge">📐 E = k · |q| / r²  &nbsp; (direção radial / afastamento ou aproximação)</div>
+                <div class="input-group">
+                    <label>Carga fonte q:</label>
+                    <div class="input-field"><input type="number" id="qEfield" step="any" placeholder="Ex: 5e-6" value="5e-6"><span>C</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Distância r:</label>
+                    <div class="input-field"><input type="number" id="rEfield" step="any" placeholder="metros" value="0.1"><span>m</span></div>
+                </div>
+                <small class="hint">🔹 Campo gerado por carga pontual no vácuo. sinal da carga define direção.</small>
+            </div>
+
+            <!-- Caso 3: Campo magnético fio retilíneo -->
+            <div id="mfieldCase" class="case-group">
+                <div class="formula-badge">📐 B = μ₀·I / (2π·r) &nbsp; ( μ₀ = 4π×10⁻⁷ T·m/A )</div>
+                <div class="input-group">
+                    <label>Corrente I:</label>
+                    <div class="input-field"><input type="number" id="current" step="any" placeholder="Amperes" value="10"><span>A</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Distância r ao fio:</label>
+                    <div class="input-field"><input type="number" id="rMfield" step="any" placeholder="metros" value="0.08"><span>m</span></div>
+                </div>
+                <small class="hint">🔹 Campo magnético circunferencial (regra da mão direita). r > 0.</small>
+            </div>
+
+            <!-- Caso 4: Força de Lorentz (magnitude) -->
+            <div id="lorentzCase" class="case-group">
+                <div class="formula-badge">📐 F = |q|·v·B·senθ &nbsp; (Força magnética sobre carga em movimento)</div>
+                <div class="input-group">
+                    <label>Carga q:</label>
+                    <div class="input-field"><input type="number" id="chargeL" step="any" placeholder="Coulombs" value="1.6e-19"><span>C</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Velocidade v:</label>
+                    <div class="input-field"><input type="number" id="velocity" step="any" placeholder="m/s" value="2e6"><span>m/s</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Campo B:</label>
+                    <div class="input-field"><input type="number" id="bField" step="any" placeholder="Tesla" value="0.5"><span>T</span></div>
+                </div>
+                <div class="input-group">
+                    <label>Ângulo θ (graus):</label>
+                    <div class="input-field"><input type="number" id="angleDeg" step="any" placeholder="0 a 180" value="90"><span>°</span></div>
+                </div>
+                <small class="hint">🔹 Força máxima quando θ = 90° (senθ=1). Use valor absoluto da carga.</small>
+            </div>
+        </div>
+
+        <button class="calc-button" id="calcularBtn">➡️ CALCULAR ⬅️</button>
+
+        <div class="result-area" id="resultArea">
+            <div class="result-label">RESULTADO</div>
+            <div class="result-value" id="resultValue">—</div>
+            <div class="extra-info" id="extraInfo">Preencha os dados e clique em calcular.</div>
+        </div>
+
+        <div class="constants">
+            <span>🔬 k = 8,98755×10⁹ N·m²/C²</span>
+            <span>🧲 μ₀ = 4π×10⁻⁷ T·m/A</span>
+            <span>⚡ 1 μC = 10⁻⁶ C</span>
+        </div>
+    </div>
+    <footer>
+        Calculadora didática · Eletromagnetismo básico · Valores no vácuo
+    </footer>
+</div>
+
+<script>
+    // Constantes físicas
+    const K_COULOMB = 8.987551787368176e9;   // N·m²/C²
+    const MU0 = 4 * Math.PI * 1e-7;           // T·m/A
+
+    // Elementos DOM
+    const caseSelect = document.getElementById('caseSelect');
+    const caseGroups = {
+        coulomb: document.getElementById('coulombCase'),
+        efield: document.getElementById('efieldCase'),
+        mfield: document.getElementById('mfieldCase'),
+        lorentz: document.getElementById('lorentzCase')
+    };
+    const resultValueDiv = document.getElementById('resultValue');
+    const extraInfoDiv = document.getElementById('extraInfo');
+    const calcularBtn = document.getElementById('calcularBtn');
+
+    // Função para trocar painel ativo
+    function switchCase(selectedId) {
+        Object.keys(caseGroups).forEach(key => {
+            const group = caseGroups[key];
+            if (group) {
+                if (key === selectedId) {
+                    group.classList.add('active-case');
+                } else {
+                    group.classList.remove('active-case');
+                }
+            }
+        });
+    }
+
+    // Evento de mudança do select
+    caseSelect.addEventListener('change', (e) => {
+        switchCase(e.target.value);
+        // Ao trocar de caso, limpar resultado anterior para não confundir
+        resultValueDiv.innerHTML = '—';
+        extraInfoDiv.innerHTML = 'Novo caso selecionado. Preencha os valores e calcule.';
+    });
+
+    // Função para tratar números e validar positivo (distância, etc)
+    function parsePositive(value, nome, allowZero = false) {
+        let num = parseFloat(value);
+        if (isNaN(num)) throw new Error(`${nome} deve ser um número válido.`);
+        if (!allowZero && num <= 0) throw new Error(`${nome} deve ser maior que zero.`);
+        if (allowZero && num < 0) throw new Error(`${nome} não pode ser negativo.`);
+        return num;
+    }
+
+    function parseNumber(value, nome, allowNegative = true) {
+        let num = parseFloat(value);
+        if (isNaN(num)) throw new Error(`${nome} inválido.`);
+        if (!allowNegative && num < 0) throw new Error(`${nome} não pode ser negativo.`);
+        return num;
+    }
+
+    // Formatação científica bonita
+    function formatResult(val, unit, precision = 5) {
+        if (val === undefined || isNaN(val)) return 'Erro';
+        let formatted;
+        if (Math.abs(val) < 0.0001 && val !== 0) {
+            formatted = val.toExponential(precision);
+        } else if (Math.abs(val) > 1e6) {
+            formatted = val.toExponential(precision);
+        } else {
+            formatted = val.toFixed(precision).replace(/\.?0+$/, '');
+        }
+        return `${formatted} ${unit}`;
+    }
+
+    // ========== 1. Lei de Coulomb ==========
+    function calcularCoulomb() {
+        const q1 = parseNumber(document.getElementById('q1').value, 'q₁', true);
+        const q2 = parseNumber(document.getElementById('q2').value, 'q₂', true);
+        const r = parsePositive(document.getElementById('rCoulomb').value, 'Distância r', false);
+        
+        const forceMagnitude = (K_COULOMB * Math.abs(q1 * q2)) / (r * r);
+        const productSign = q1 * q2;
+        let tipoForca = '';
+        if (productSign > 0) tipoForca = '🔁 Repulsiva (cargas de mesmo sinal)';
+        else if (productSign < 0) tipoForca = '🔂 Atrativa (cargas de sinais opostos)';
+        else tipoForca = 'Cargas nulas → força zero';
+        
+        const forceFormatted = formatResult(forceMagnitude, 'N', 5);
+        extraInfoDiv.innerHTML = `⚡ Força eletrostática: ${forceFormatted}<br>📌 ${tipoForca}. Direção ao longo da linha que une as cargas.`;
+        resultValueDiv.innerHTML = `${forceFormatted}`;
+    }
+
+    // ========== 2. Campo Elétrico (carga pontual) ==========
+    function calcularCampoEletrico() {
+        const q = parseNumber(document.getElementById('qEfield').value, 'Carga q', true);
+        const r = parsePositive(document.getElementById('rEfield').value, 'Distância r', false);
+        const E = (K_COULOMB * Math.abs(q)) / (r * r);
+        let direcao = '';
+        if (q > 0) direcao = '➡️ Campo radial → para fora (afastamento da carga)';
+        else if (q < 0) direcao = '⬅️ Campo radial ← para dentro (aproximação da carga)';
+        else direcao = 'Carga nula → campo elétrico nulo';
+        
+        const eFormatted = formatResult(E, 'N/C', 5);
+        extraInfoDiv.innerHTML = `📡 Módulo do Campo Elétrico: ${eFormatted}<br>🧭 ${direcao}`;
+        resultValueDiv.innerHTML = `${eFormatted}`;
+    }
+
+    // ========== 3. Campo magnético - fio retilíneo infinito ==========
+    function calcularCampoMagnetico() {
+        const I = parseNumber(document.getElementById('current').value, 'Corrente I', false);
+        const r = parsePositive(document.getElementById('rMfield').value, 'Distância ao fio', false);
+        // B = μ0 * I / (2π r)
+        const B = (MU0 * I) / (2 * Math.PI * r);
+        const bFormatted = formatResult(B, 'T', 6);
+        extraInfoDiv.innerHTML = `🧲 Campo magnético circunferencial: ${bFormatted}<br>📌 Regra da mão direita: polegar no sentido da corrente, dedos indicam direção do campo.`;
+        resultValueDiv.innerHTML = `${bFormatted}`;
+    }
+
+    // ========== 4. Força de Lorentz (magnitude) ==========
+    function calcularLorentz() {
+        let q = parseNumber(document.getElementById('chargeL').value, 'Carga q', true);
+        const v = parseNumber(document.getElementById('velocity').value, 'Velocidade v', false);
+        const B = parseNumber(document.getElementById('bField').value, 'Campo magnético B', false);
+        let thetaDeg = parseNumber(document.getElementById('angleDeg').value, 'Ângulo θ', true);
+        
+        // Para força usamos valor absoluto da carga, mas sinal não altera magnitude
+        const absQ = Math.abs(q);
+        const thetaRad = thetaDeg * Math.PI / 180;
+        const sinTheta = Math.sin(thetaRad);
+        const force = absQ * v * B * sinTheta;
+        
+        const forceFormatted = formatResult(force, 'N', 5);
+        let obs = `sen(${thetaDeg}°) = ${sinTheta.toFixed(4)} → `;
+        if (sinTheta === 0) obs += 'Força nula (carga se move paralelamente ao campo).';
+        else obs += `Força perpendicular a v e B (regra da mão esquerda).`;
+        extraInfoDiv.innerHTML = `🌀 Força magnética: ${forceFormatted}<br>📐 ${obs}`;
+        resultValueDiv.innerHTML = `${forceFormatted}`;
+    }
+
+    // Resolvedor principal que escolhe o caso ativo
+    function resolver() {
+        const activeCase = caseSelect.value;
+        try {
+            switch (activeCase) {
+                case 'coulomb':
+                    calcularCoulomb();
+                    break;
+                case 'efield':
+                    calcularCampoEletrico();
+                    break;
+                case 'mfield':
+                    calcularCampoMagnetico();
+                    break;
+                case 'lorentz':
+                    calcularLorentz();
+                    break;
+                default:
+                    throw new Error('Caso não reconhecido.');
+            }
+        } catch (error) {
+            resultValueDiv.innerHTML = '⚠️ Erro';
+            extraInfoDiv.innerHTML = `❌ ${error.message} Verifique os valores inseridos.`;
+            console.error(error);
+        }
+    }
+
+    // Adicionar evento do botão
+    calcularBtn.addEventListener('click', resolver);
+
+    // Inicializar com o primeiro caso (coulomb)
+    switchCase('coulomb');
+    
+    // Adicionar pequeno helper: Enter no último campo? opcional, mas não obrigatório
+    // Adicionar validação extra nos campos de distância etc para feedback visual
+    function addInputSanity() {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(inp => {
+            inp.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') resolver();
+            });
+        });
+    }
+    addInputSanity();
+
+    // Apresentar valores padrão para demonstração: já estão preenchidos, mas ao iniciar mostrar um cálculo exemplo implícito
+    // Opcional: pré-calcular automaticamente para mostrar interatividade (não obrigatório)
+    // Pequeno efeito: primeiro cálculo amigável para exibir dados iniciais
+    setTimeout(() => {
+        // mostra exemplo inicial sem necessidade de interação? apenas se os campos estiverem default.
+        // mas para não sobrecarregar, apenas trigger se o resultado estiver com placeholder
+        if (resultValueDiv.innerHTML === '—') {
+            // realiza apenas para exibir algo inicial
+            resolver();
+        }
+    }, 200);
+</script>
+</body>
+</html>
